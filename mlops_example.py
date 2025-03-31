@@ -1,14 +1,6 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-pip install azureml-opendatasets
-
+# pip install azureml-opendatasets
 
 # In[25]:
-
 
 from azureml.core import Workspace
 ws = Workspace.from_config()
@@ -17,19 +9,14 @@ print('Workspace name: ' + ws.name,
       'Subscription id: ' + ws.subscription_id, 
       'Resource group: ' + ws.resource_group, sep='\\n')
 
-
 # In[26]:
-
 
 from azureml.core import Experiment
 experiment = Experiment(workspace=ws, name="diabetes-experiment")
 
-
 # In[27]:
 
-
-# 데이터셋 준비 
-
+# 데이터셋 준비
 from azureml.opendatasets import Diabetes
 from sklearn.model_selection import train_test_split
 
@@ -40,9 +27,7 @@ X_train, X_test, y_train, y_test = train_test_split(x_df, y_df, test_size=0.2, r
 
 print(X_train)
 
-
 # In[28]:
-
 
 # 모델 학습/로깅, 모델파일 업로드
 from sklearn.linear_model import Ridge
@@ -73,18 +58,13 @@ for alpha in alphas:
 
     print(f"{alpha} exp completed")
 
-
 # In[29]:
-
 
 experiment
 
-
 # In[30]:
 
-
 # Best model 탐색 후 다운로드
-
 minimum_rmse_runid = None
 minimum_rmse = None
 
@@ -110,12 +90,9 @@ best_run = Run(experiment=experiment, run_id=minimum_rmse_runid)
 print(best_run.get_file_names())
 best_run.download_file(name=str(best_run.get_file_names()[0]))
 
-
 # In[31]:
 
-
 # DataStore 에 Input/Output 데이터셋 등록
-
 import numpy as np
 from azureml.core import Dataset
 
@@ -130,12 +107,9 @@ datastore.upload_files(files=['./features.csv', './labels.csv'],
 input_dataset = Dataset.Tabular.from_delimited_files(path=[(datastore, 'diabetes-experiment/features.csv')])
 output_dataset = Dataset.Tabular.from_delimited_files(path=[(datastore, 'diabetes-experiment/labels.csv')])
 
-
 # In[32]:
 
-
 # Best model 등록
-
 import sklearn
 
 from azureml.core import Model
@@ -155,12 +129,9 @@ model = Model.register(workspace=ws,
 print('Name:', model.name)
 print('Version:', model.version)
 
-
 # In[42]:
 
-
 # 모델 배포
-
 from azureml.core.webservice import AciWebservice
 from azureml.core.model import InferenceConfig
 from azureml.core.environment import Environment
@@ -187,7 +158,6 @@ try:
 except Exception as e:
     print("기존 서비스가 없거나 이미 삭제됨:", e)
 
-
 # Deploy Model
 service = Model.deploy(
     workspace=ws,
@@ -201,9 +171,7 @@ service.wait_for_deployment(show_output=True)
 
 # Azure ML ACR(Azure Container Registry) Access Error => ACR Access key: Enable Admin User 
 
-
 # In[46]:
-
 
 # 배포 서비스 테스트 : 노트북
 print("\n===== 모델 예측 테스트 =====")
@@ -224,9 +192,7 @@ output = service.run(input_payload)
 print("예측 결과:")
 print(output)
 
-
 # In[44]:
-
 
 # 10. 등록된 모델 목록 확인
 print("\n===== 등록된 모델 목록 =====")
@@ -235,19 +201,10 @@ registered_models = ml_client.models.list()
 for model in registered_models:
     print(f"Name: {model.name}, Version: {model.version}, Created: {model.creation_context.created_at}")
 
-
 # In[ ]:
-
 
 # 11. 리소스 정리 (선택 사항)
 # print("\n===== 리소스 정리 =====")
 # print(f"엔드포인트 {endpoint_name} 삭제 중...")
 # ml_client.online_endpoints.begin_delete(name=endpoint_name)
 # print("엔드포인트 삭제 완료")
-
-
-# In[ ]:
-
-
-
-
